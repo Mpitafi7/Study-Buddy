@@ -202,6 +202,17 @@ export default function OnboardingPage() {
           )}
         </Card>
 
+        {/* Skip to Chat — Judge-friendly quick access */}
+        <div className="mt-4 text-center">
+          <Link
+            to="/chat"
+            className="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-primary transition-colors underline underline-offset-4"
+          >
+            <MessageSquare className="h-4 w-4" />
+            Skip — Chat without a document
+          </Link>
+        </div>
+
         <div className="mt-8 grid gap-4 sm:grid-cols-2">
           <Card className="p-4">
             <h3 className="font-semibold mb-1">Your Library</h3>
