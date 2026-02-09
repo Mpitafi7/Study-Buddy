@@ -140,7 +140,7 @@ npm run dev
 ```
 
 ### Usage
-1. Open `https://studybuddytutr.netlify.app` in your browser
+1. Open `https://studybuddytutr.netlify.app/` in your browser
 2. Click the ⚙️ Settings icon and enter your Gemini API key
 3. Upload a PDF/DOCX/TXT file from the home page
 4. Start chatting — diagrams appear automatically in the sidebar
