@@ -2,6 +2,8 @@
 @tailwind components;
 @tailwind utilities;
 
+@import "katex/dist/katex.min.css";
+
 /* StudyBuddy AI Design System - Dark Theme */
 
 @layer base {
@@ -186,7 +188,67 @@
   .glass {
     background: hsl(var(--card) / 0.8);
     backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
     border: 1px solid hsl(var(--border) / 0.5);
+  }
+
+  /* KaTeX: block equations centered and clear */
+  .message-content .katex-display {
+    display: flex !important;
+    justify-content: center;
+    margin: 0.75em 0;
+    padding: 0.5em 0;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .message-content .katex {
+    font-size: 1.05em;
+  }
+  .message-content .katex-display > .katex {
+    font-size: 1.15em;
+  }
+
+  /* Diagram panel: clean white/glass background, responsive SVG */
+  .diagram-panel-wrap {
+    background: hsl(0 0% 100% / 0.92);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid hsl(var(--border) / 0.5);
+  }
+  .dark .diagram-panel-wrap {
+    background: hsl(var(--card) / 0.9);
+  }
+  .diagram-panel-inner {
+    background: hsl(0 0% 100% / 0.6);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 0.75rem;
+    border: 1px solid hsl(var(--border) / 0.3);
+  }
+  .dark .diagram-panel-inner {
+    background: hsl(var(--muted) / 0.4);
+  }
+  .diagram-svg-wrapper {
+    width: 100%;
+    max-width: 100%;
+  }
+  .diagram-svg-wrapper svg {
+    max-width: 100% !important;
+    width: 100% !important;
+    height: auto !important;
+  }
+  /* Thick lines so diagram stays clear when zoomed; matches UI clarity */
+  .diagram-svg-wrapper svg path,
+  .diagram-svg-wrapper svg line,
+  .diagram-svg-wrapper svg polyline,
+  .diagram-svg-wrapper svg polygon {
+    stroke-width: 2.5;
+  }
+  .diagram-svg-wrapper svg .edgePath path {
+    stroke-width: 2.5;
+  }
+  .diagram-svg-wrapper svg .label {
+    font-size: 14px;
   }
 
   /* Animated gradient border */

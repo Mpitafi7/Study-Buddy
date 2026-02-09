@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { Brain, Menu, X, Upload, BookOpen, BarChart3, Home } from "lucide-react";
+import { Menu, X, Upload, BookOpen, BarChart3, Home, Settings } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SettingsModal } from "@/components/layout/SettingsModal";
+// openSettingsModal is not used here directly but listener is in useEffect
+
 
 const navLinks = [
   { href: "/", label: "Home", icon: Home },
@@ -12,19 +15,23 @@ const navLinks = [
 
 export function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const location = useLocation();
 
+  useEffect(() => {
+    const open = () => setSettingsOpen(true);
+    window.addEventListener("open-settings", open);
+    return () => window.removeEventListener("open-settings", open);
+  }, []);
+
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 glass">
+    <nav className="fixed top-0 left-0 right-0 z-50 glass shadow-sm">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2 group">
-            <motion.div
-              whileHover={{ rotate: 10 }}
-              className="p-2 rounded-lg bg-gradient-primary"
-            >
-              <Brain className="h-5 w-5 text-primary-foreground" />
+            <motion.div whileHover={{ rotate: 10 }} className="flex shrink-0">
+              <img src="/logo.png" alt="StudyBuddy AI" className="h-9 w-9 object-contain" />
             </motion.div>
             <span className="text-lg font-bold text-foreground">
               StudyBuddy <span className="text-gradient">AI</span>
@@ -39,11 +46,10 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   to={link.href}
-                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${
-                    isActive
+                  className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors ${isActive
                       ? "text-primary bg-primary/10"
                       : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                  }`}
+                    }`}
                 >
                   <link.icon className="h-4 w-4" />
                   <span className="text-sm font-medium">{link.label}</span>
@@ -52,8 +58,17 @@ export function Navbar() {
             })}
           </div>
 
-          {/* Upload Button (Desktop) */}
-          <div className="hidden md:block">
+          {/* Settings + Upload (Desktop) */}
+          <div className="hidden md:flex items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="rounded-lg"
+              onClick={() => setSettingsOpen(true)}
+              aria-label="Settings"
+            >
+              <Settings className="h-5 w-5" />
+            </Button>
             <Link to="/onboarding">
               <Button className="bg-gradient-primary hover:opacity-90 animate-pulse-glow gap-2">
                 <Upload className="h-4 w-4" />
@@ -94,17 +109,27 @@ export function Navbar() {
                     key={link.href}
                     to={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
-                      isActive
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${isActive
                         ? "text-primary bg-primary/10"
                         : "text-muted-foreground hover:text-foreground hover:bg-muted/50"
-                    }`}
+                      }`}
                   >
                     <link.icon className="h-5 w-5" />
                     <span className="font-medium">{link.label}</span>
                   </Link>
                 );
               })}
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-3 px-4 py-3"
+                onClick={() => {
+                  setIsMobileMenuOpen(false);
+                  setSettingsOpen(true);
+                }}
+              >
+                <Settings className="h-5 w-5" />
+                <span className="font-medium">Settings</span>
+              </Button>
               <Link
                 to="/onboarding"
                 onClick={() => setIsMobileMenuOpen(false)}
@@ -119,6 +144,8 @@ export function Navbar() {
           </motion.div>
         )}
       </AnimatePresence>
+
+      <SettingsModal open={settingsOpen} onOpenChange={setSettingsOpen} />
     </nav>
   );
 }

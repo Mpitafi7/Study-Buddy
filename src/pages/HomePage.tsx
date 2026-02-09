@@ -1,5 +1,4 @@
 import { Navbar } from "@/components/layout/Navbar";
-import { Footer } from "@/components/layout/Footer";
 import { HeroSection } from "@/components/home/HeroSection";
 import { StatsSection } from "@/components/home/StatsSection";
 import { FeaturesSection } from "@/components/home/FeaturesSection";
@@ -19,7 +18,6 @@ export default function HomePage() {
         <DemoPreviewSection />
         <CTASection />
       </main>
-      <Footer />
     </div>
   );
 }
