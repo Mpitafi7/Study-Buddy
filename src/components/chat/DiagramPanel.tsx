@@ -1,7 +1,8 @@
 import { useEffect, useId, useRef, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Download, Loader2, AlertTriangle } from "lucide-react";
+import { Download, Loader2, AlertTriangle, Maximize2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent, DialogTrigger, DialogTitle } from "@/components/ui/dialog";
 import { extractLastMermaid, extractLastMermaidFallback } from "@/lib/extractMermaid";
 
 /** Detect diagram type from raw mermaid code for styling/labels. */
@@ -47,9 +48,12 @@ function downloadSvg(svg: string, filename: string) {
 function downloadPng(svgString: string, filename: string) {
   const img = new Image();
   // Ensure the SVG string has the namespace
-  const source = svgString.includes("xmlns")
+  let source = svgString.includes("xmlns")
     ? svgString
     : svgString.replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"');
+
+  // CRITICAL: Remove foreignObject tags to prevent "Tainted canvases" error
+  source = source.replace(/<foreignObject[\s\S]*?<\/foreignObject>/g, "");
 
   const blob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
   const url = URL.createObjectURL(blob);
@@ -286,10 +290,11 @@ export function DiagramPanel({ content, highlightedNodeId }: { content: string |
                 setDownloading("png");
                 try {
                   // Render a clean SVG without HTML labels for export
-                  // This avoids the "Tainted canvases" error
+                  // This is CRITICAL to avoid "Tainted canvases" error
                   const exportConfig = {
                     ...MERMAID_CONFIG,
                     flowchart: { ...MERMAID_CONFIG.flowchart, htmlLabels: false },
+                    fontFamily: "Inter, sans-serif" // Explicit font
                   };
                   const exportId = `mermaid-export-${Date.now()}`;
                   // We need to temporarily render this to get the SVG, but we don't need to show it
@@ -339,16 +344,67 @@ export function DiagramPanel({ content, highlightedNodeId }: { content: string |
               </pre>
             </motion.div>
           ) : svg ? (
-            <motion.div
-              ref={svgRef}
-              key={svg.slice(0, 50)}
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.3 }}
-              className="diagram-svg-wrapper w-full p-2 [&_svg]:max-w-full [&_svg]:h-auto [&_.cluster_rect]:rx-8 [&_.cluster_rect]:opacity-80"
-              dangerouslySetInnerHTML={{ __html: svg }}
-            />
+            <Dialog>
+              <DialogTrigger asChild>
+                <div className="w-full h-full cursor-pointer hover:bg-muted/5 rounded-lg transition-colors group relative">
+                  <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                    <Maximize2 className="h-5 w-5 text-muted-foreground bg-background/80 rounded p-0.5 shadow-sm" />
+                  </div>
+                  <motion.div
+                    ref={svgRef}
+                    key={svg.slice(0, 50)}
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.3 }}
+                    className="diagram-svg-wrapper w-full p-2 [&_svg]:max-w-full [&_svg]:h-auto [&_.cluster_rect]:rx-8 [&_.cluster_rect]:opacity-80"
+                    dangerouslySetInnerHTML={{ __html: svg }}
+                  />
+                </div>
+              </DialogTrigger>
+              <DialogContent className="max-w-[90vw] md:max-w-4xl max-h-[90vh] overflow-y-auto w-full">
+                <DialogTitle className="sr-only">Diagram View</DialogTitle>
+                <div className="flex justify-between items-center mb-4">
+                  <h3 className="text-lg font-semibold">Diagram View</h3>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => downloadSvg(svg, downloadBaseName)}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      SVG
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={async () => {
+                        if (!code) return;
+                        try {
+                          const exportConfig = {
+                            ...MERMAID_CONFIG,
+                            flowchart: { ...MERMAID_CONFIG.flowchart, htmlLabels: false },
+                            fontFamily: "Inter, sans-serif"
+                          };
+                          const exportId = `mermaid-export-modal-${Date.now()}`;
+                          const cleanSvg = await tryRenderMermaid(code, exportId, exportConfig);
+                          downloadPng(cleanSvg, downloadBaseName);
+                        } catch (err) {
+                          console.error(err);
+                        }
+                      }}
+                    >
+                      <Download className="h-4 w-4 mr-2" />
+                      PNG
+                    </Button>
+                  </div>
+                </div>
+                <div
+                  className="w-full flex justify-center [&_svg]:w-full [&_svg]:max-w-full [&_svg]:h-auto"
+                  dangerouslySetInnerHTML={{ __html: svg }}
+                />
+              </DialogContent>
+            </Dialog>
           ) : (
             <motion.div
               key="loading"
