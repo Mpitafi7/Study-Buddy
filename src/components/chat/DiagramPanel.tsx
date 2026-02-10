@@ -46,24 +46,26 @@ function downloadSvg(svg: string, filename: string) {
 }
 
 function downloadPng(svgString: string, filename: string) {
-  const img = new Image();
-  // Ensure the SVG string has the namespace
-  let source = svgString.includes("xmlns")
+  // 1. Serialize SVG (though we already have the string, this ensures it's clean if we passed an element)
+  // Since we pass a string, we can use it directly, but let's ensure namespace.
+  const source = svgString.includes("xmlns")
     ? svgString
     : svgString.replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"');
 
-  // CRITICAL: Remove foreignObject tags to prevent "Tainted canvases" error
-  source = source.replace(/<foreignObject[\s\S]*?<\/foreignObject>/g, "");
-
+  // 2. Create Blob
   const blob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
   const url = URL.createObjectURL(blob);
+
+  // 3. Image Object
+  const img = new Image();
+  img.crossOrigin = "anonymous"; // 4. CORS Handling
 
   img.onload = () => {
     // High-res scale factor
     const scale = 3;
 
+    // 5. Canvas Drawing
     const canvas = document.createElement("canvas");
-    // Use natural dimensions or fallback to a reasonable default if missing
     const width = img.naturalWidth || 800;
     const height = img.naturalHeight || 600;
 
@@ -83,22 +85,33 @@ function downloadPng(svgString: string, filename: string) {
     // Draw image scaled
     ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
 
-    canvas.toBlob((blob) => {
+    try {
+      canvas.toBlob((pngBlob) => {
+        // 6. Clean up
+        URL.revokeObjectURL(url);
+
+        if (!pngBlob) {
+          console.error("Canvas serialization failed");
+          return;
+        }
+
+        const pngUrl = URL.createObjectURL(pngBlob);
+        const a = document.createElement("a");
+        a.href = pngUrl;
+        a.download = filename.endsWith(".png") ? filename : `${filename}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(pngUrl), 100);
+      }, "image/png", 1.0);
+    } catch (e) {
+      console.error("Canvas toBlob failed (tainted):", e);
       URL.revokeObjectURL(url);
-      if (!blob) return;
-      const pngUrl = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = pngUrl;
-      a.download = filename.endsWith(".png") ? filename : `${filename}.png`;
-      document.body.appendChild(a); // Append to body for Firefox support
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(pngUrl);
-    }, "image/png", 1.0); // Max quality
+    }
   };
 
-  img.onerror = () => {
-    console.error("Failed to load SVG for conversion");
+  img.onerror = (e) => {
+    console.error("Failed to load SVG for conversion", e);
     URL.revokeObjectURL(url);
   };
 
