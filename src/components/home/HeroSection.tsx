@@ -104,14 +104,20 @@ export function HeroSection() {
                 <ArrowRight className="h-5 w-5" />
               </Button>
             </Link>
-            <Button
-              variant="outline"
-              size="lg"
-              className="gap-2 text-lg px-8 py-6 border-border/50 hover:bg-muted/50"
+            <a
+              href="https://www.youtube.com/watch?v=JZvcD3bEO7g"
+              target="_blank"
+              rel="noopener noreferrer"
             >
-              <Play className="h-5 w-5" />
-              Watch Demo
-            </Button>
+              <Button
+                variant="outline"
+                size="lg"
+                className="gap-2 text-lg px-8 py-6 border-border/50 hover:bg-muted/50"
+              >
+                <Play className="h-5 w-5" />
+                Watch Demo
+              </Button>
+            </a>
           </motion.div>
 
           {/* Trust badges */}
