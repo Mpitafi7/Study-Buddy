@@ -281,10 +281,27 @@ export function DiagramPanel({ content, highlightedNodeId }: { content: string |
               size="sm"
               className="h-8 gap-1.5 text-xs"
               disabled={downloading !== null}
-              onClick={() => {
+              onClick={async () => {
+                if (!code) return;
                 setDownloading("png");
-                downloadPng(svg, downloadBaseName);
-                setTimeout(() => setDownloading(null), 500);
+                try {
+                  // Render a clean SVG without HTML labels for export
+                  // This avoids the "Tainted canvases" error
+                  const exportConfig = {
+                    ...MERMAID_CONFIG,
+                    flowchart: { ...MERMAID_CONFIG.flowchart, htmlLabels: false },
+                  };
+                  const exportId = `mermaid-export-${Date.now()}`;
+                  // We need to temporarily render this to get the SVG, but we don't need to show it
+                  // The tryRenderMermaid function cleans up after itself
+                  const cleanSvg = await tryRenderMermaid(code, exportId, exportConfig);
+
+                  downloadPng(cleanSvg, downloadBaseName);
+                  setTimeout(() => setDownloading(null), 500);
+                } catch (err) {
+                  console.error("Failed to generate export SVG", err);
+                  setDownloading(null);
+                }
               }}
             >
               {downloading === "png" ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
