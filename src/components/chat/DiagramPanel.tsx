@@ -314,10 +314,11 @@ export function DiagramPanel({ content, highlightedNodeId }: { content: string |
                   // The tryRenderMermaid function cleans up after itself
                   const cleanSvg = await tryRenderMermaid(code, exportId, exportConfig);
 
-                  downloadPng(cleanSvg, downloadBaseName);
-                  setTimeout(() => setDownloading(null), 500);
-                } catch (err) {
+                  await downloadPng(cleanSvg, downloadBaseName);
+                  setDownloading(null);
+                } catch (err: any) {
                   console.error("Failed to generate export SVG", err);
+                  alert("Failed to export PNG: " + (err.message || "Unknown error"));
                   setDownloading(null);
                 }
               }}
@@ -401,9 +402,10 @@ export function DiagramPanel({ content, highlightedNodeId }: { content: string |
                           };
                           const exportId = `mermaid-export-modal-${Date.now()}`;
                           const cleanSvg = await tryRenderMermaid(code, exportId, exportConfig);
-                          downloadPng(cleanSvg, downloadBaseName);
-                        } catch (err) {
+                          await downloadPng(cleanSvg, downloadBaseName);
+                        } catch (err: any) {
                           console.error(err);
+                          alert("Failed to export PNG: " + (err.message || "Unknown error"));
                         }
                       }}
                     >
