@@ -46,20 +46,39 @@ function downloadSvg(svg: string, filename: string) {
 
 function downloadPng(svgString: string, filename: string) {
   const img = new Image();
-  const blob = new Blob([svgString], { type: "image/svg+xml;charset=utf-8" });
+  // Ensure the SVG string has the namespace
+  const source = svgString.includes("xmlns")
+    ? svgString
+    : svgString.replace("<svg", '<svg xmlns="http://www.w3.org/2000/svg"');
+
+  const blob = new Blob([source], { type: "image/svg+xml;charset=utf-8" });
   const url = URL.createObjectURL(blob);
+
   img.onload = () => {
+    // High-res scale factor
+    const scale = 3;
+
     const canvas = document.createElement("canvas");
-    canvas.width = img.naturalWidth;
-    canvas.height = img.naturalHeight;
+    // Use natural dimensions or fallback to a reasonable default if missing
+    const width = img.naturalWidth || 800;
+    const height = img.naturalHeight || 600;
+
+    canvas.width = width * scale;
+    canvas.height = height * scale;
+
     const ctx = canvas.getContext("2d");
     if (!ctx) {
       URL.revokeObjectURL(url);
       return;
     }
+
+    // White background
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-    ctx.drawImage(img, 0, 0);
+
+    // Draw image scaled
+    ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+
     canvas.toBlob((blob) => {
       URL.revokeObjectURL(url);
       if (!blob) return;
@@ -67,11 +86,18 @@ function downloadPng(svgString: string, filename: string) {
       const a = document.createElement("a");
       a.href = pngUrl;
       a.download = filename.endsWith(".png") ? filename : `${filename}.png`;
+      document.body.appendChild(a); // Append to body for Firefox support
       a.click();
+      document.body.removeChild(a);
       URL.revokeObjectURL(pngUrl);
-    }, "image/png");
+    }, "image/png", 1.0); // Max quality
   };
-  img.onerror = () => URL.revokeObjectURL(url);
+
+  img.onerror = () => {
+    console.error("Failed to load SVG for conversion");
+    URL.revokeObjectURL(url);
+  };
+
   img.src = url;
 }
 
