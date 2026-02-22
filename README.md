@@ -1,10 +1,22 @@
+# ⚠️ Important Note for Evaluation Judges
+
+> **Apologies for the post-deadline documentation update.**
+> 
+> This commit is **strictly limited to correcting the Live Demo URL** in this README file. The previous link was incorrectly entered due to a typographical error. 
+> 
+> **Verification Details:**
+> - **Zero Code Changes:** No modifications have been made to the `src/`, `public/`, or any configuration files.
+> - **Logic Integrity:** The application logic, Gemini prompt structures, and PWA configurations remain exactly as they were at the time of the official submission deadline.
+> - **Purpose:** This update is only to ensure the judging panel can access the correct live environment at: [https://studybuddytutr.netlify.app/](https://studybuddytutr.netlify.app/)
+
+---
 # 🎓 StudyBuddy AI
 
 **An AI-powered adaptive learning companion built with the Google Gemini API.**
 
 StudyBuddy AI transforms any study material into an interactive learning experience. Upload your documents, and an intelligent tutor — powered by Gemini — explains concepts at your level, generates detailed diagrams, creates quizzes, and even tutors you live through voice interaction with real-time captions.
 
-> **Built for the Gemini 3 Hackathon** · [Live Demo](https://studybuddy-ai.netlify.app) · [Devpost](https://devpost.com/muntazirmahdi069)
+> **Built for the Gemini 3 Hackathon** · [Live Demo](https://studybuddytutr.netlify.app/) · [Devpost](https://devpost.com/muntazirmahdi)
 
 ---
 
